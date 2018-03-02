@@ -2,6 +2,15 @@
 
 This repository holds protobuf descriptors for the sensors used by the HAND teams.  
 
+## Generate boilerplate code
+
+Python:  
+```docker run --rm -v $(pwd):$(pwd) -w $(pwd) znly/protoc --python_out=. -I. weather-station.proto```
+
+Javascript:  
+TODO
+
+
 ## Weather station
 The weather stations (David Vantage VUE) stream data to a home-developed microchip.
 This data is then encoded into protobuf frames and sent to the HAND-Cloud API.
