@@ -1,0 +1,397 @@
+syntax = "proto3";
+
+/* 
+ * Inspired by the official protocol spec docs, and the Weather Underground upload protocol
+ * Weather underground: http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol
+ * Davis Protocol spec: https://www.davisnet.com/support/weather/download/VantageSerialProtocolDocs_v261.pdf
+ * Davis Sensor Details: https://www.davisnet.com/product_documents/weather/spec_sheets/6250_6351_57_SS.pdf
+ */
+
+
+/*
+ * Packet containing all weather station live data
+ */
+message WeatherStationDataPacket {
+    
+    string device_id = 1;
+    uint64 packet_id = 2;
+    
+    // HUMIDITY
+
+    // Outside Humidity in % (0 to 100%)
+    uint32 outside_humidity = 11;
+    // Inside Humidity in % (0 to 100%)
+    uint32 inside_humidity = 12;
+
+    // TEMPERATURE
+
+    // Outside temperature in °F, times ten (-40.0 to 150.0°F => -400 to 1500)
+    sint32 outside_temp_x10_degf = 21;
+    // Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_x10_degf = 22;
+    // Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_degf = 23;
+    // Heat index in °F (255 = no data, -40 to +165°F)
+    sint32 heat_index_degf = 24;
+    // Wind chill in °F (255 = no data, -110 to 135°F)
+    sint32 wind_chill_degf = 25;
+    // THSW index <=> apparent temperature in °F (255 = no data, -110 to 135°F)
+    sint32 apparent_temp_degf = 26;
+
+    // SOLAR
+    
+    // UV in UV Index, times ten (0 to 16 Index => 0 to 160)
+    uint32 uv_index_x10 = 31;
+    // Solar radiation in W/m2 (0 to 1800 W/m2)
+    uint32 solar_radiation_wm2 = 32;
+
+    // RAIN
+
+    // Rain rate in inches per hour times 100 (0 to 199.9" => 0 to 19990)
+    uint32 rain_rate_x100_inph = 41;
+    // Rain fall over the past 15 minutes in inches, times 100 (0 to 199.9” => 0 to 19990)
+    uint32 rain_15m_x100_in = 42;
+    // Rain fall over the past hour in inches, times 100 (0 to 199.9” => 0 to 19990)
+    uint32 rain_hour_x100_in = 43;
+    // Rain fall since the beginning of day in inches, times 100 (0 to 199.9” => 0 to 19990)
+    uint32 rain_daily_x100_in = 44;
+    // Rain fall over the past 24 hours in inches, times 100 (0 to 199.9” => 0 to 19990)
+    uint32 rain_24h_x100_in = 45;
+
+    // BAROMETRY
+    
+    enum BaroTrend {
+        FALLING_RAPIDLY = 0;
+        FALLING_SLOWLY = 1;
+        STEADY = 2;
+        RISING_SLOWLY = 3;
+        RISING_RAPIDLY = 4;
+    }
+    BaroTrend barometric_trend = 51;
+    // Raw Barometric pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometric_pressure_raw_x1000_in = 52;
+    // Barometric calibration offset in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometric_calib_offset_x1000_in = 53;
+    // Corrected Absolute Barometric pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometric_pressure_corrected_x1000_in = 54;
+    // Barometric reduction method: (0 = user offset, 1 = altimeter setting, 2 = NOAA Bar reduction) 
+    enum BaroReductionMethod {
+        OFFSET = 0;
+        ALTIMETER = 1;
+        NOAABAR = 2;
+    }
+    BaroReductionMethod barometric_reduction_method = 55;
+    // Altimeter setting in inches, times 1000 (0 = user offset, 1 = altimeter setting, 2 = NOAA Bar reduction)
+    uint32 altimeter_setting_x1000_in = 56;
+
+    // WIND
+
+    // Wind direction in ° (0 = no data, 1 to 360°)
+    uint32 wind_dir = 61;
+    // Wind speed in mph (0 = no data, 2 to 180mph)
+    uint32 wind_speed_mph = 62;
+    // Wind direction averaged 2 minutes in ° (0 = no data, 1 to 360°)
+    uint32 wind_dir_avg_2m = 63;
+    // Wind speed averaged 2 minutes in mph (0 = no data, 2 to 180mph)
+    uint32 wind_speed_avg_mph_2m = 64;
+    // Wind direction averaged 10 minutes in ° (0 = no data, 1 to 360°)
+    uint32 wind_dir_avg_10m = 65;
+    // Wind speed averaged 10 minutes in mph (0 = no data, 2 to 180mph)
+    uint32 wind_speed_avg_mph_10m = 66;
+    // Wind gust speed for past 10 minutes in mph (0 = no data, 2 to 180mph)
+    uint32 wind_gust_speed_mph_10m = 67;
+    // Wind gust direction for past 10 minutes in mph (0 = no data, 1 to 360°)
+    uint32 wind_gust_dir_mph_10m = 68;
+
+}
+
+/*
+ * Packet containing all weather station alarm states
+ */
+message WeatherStationAlarmPacket {
+    
+    string device_id = 1;
+    uint64 packet_id = 2;
+    
+    // Inside Alarms
+    uint32 inside_alarms = 3;
+    
+    // Rain Alarms
+    uint32 rain_alarms = 4;
+
+    // Outside Alarms
+    uint32 ouside_alarms = 5;
+
+    // Humidity Alarms
+    uint32 humidity_alarms = 6;
+
+    // Temp Alarms
+    uint32 temp_alarms = 7;
+
+    // Soil & Leaf Alarms
+    uint32 soil_leaf_alarms = 8;
+
+}
+
+
+/*
+ * Packet containing all weather hi-low statistics
+ */
+message WeatherStationHiLowDataPacket {
+    
+    string device_id = 1;
+    uint64 packet_id = 2;
+    
+    // WIND
+    
+    // Wind High speed in mph (0 = no data, 2 to 180mph)
+    uint32 wind_daily_high_speed_mph = 11;
+
+    // Time of Day High speed in mph (0 = no data, 2 to 180mph)
+    uint32 wind_time_of_day_high_speed_mph = 12;
+
+    // Monthly High speed in mph (0 = no data, 2 to 180mph)
+    uint32 wind_monthly_high_speed_mph = 13;
+
+    // Yearly High speed in mph (0 = no data, 2 to 180mph)
+    uint32 wind_yearly_high_speed_mph = 14;
+    
+    // TEMPERATURE
+
+    // Daily Low Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_daily_low_x10_degf = 21;
+    // Daily High Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_daily_high_x10_degf = 22;
+
+    // Time of Day Low Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_time_of_day_low_x10_degf = 23;
+    // Time of Day High Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_time_of_day_high_x10_degf = 24;
+
+    // Monthly Low Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_monthly_low_x10_degf = 25;
+    // Monthly High Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_monthly_high_x10_degf = 26;
+
+    // Yearly Low Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_yearly_low_x10_degf = 27;
+    // Yearly High Inside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 inside_temp_yearly_high_x10_degf = 28;
+
+    // Daily Low Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_daily_low_x10_degf = 31;
+    // Daily High Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_daily_high_x10_degf = 32;
+
+    // Time of Day Low Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_time_of_day_low_x10_degf = 33;
+    // Time of Day High Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_time_of_day_high_x10_degf = 34;
+
+    // Monthly Low Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_monthly_low_x10_degf = 35;
+    // Monthly High Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_monthly_high_x10_degf = 36;
+
+    // Yearly Low Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_yearly_low_x10_degf = 37;
+    // Yearly High Outside temperature in °F, times ten (32 to 140°F => 320 to 1400)
+    sint32 outside_temp_yearly_high_x10_degf = 38;
+    
+    // Daily Low Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_daily_low_degf = 39;
+    // Daily High Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_daily_high_degf = 40;
+
+    // Time of Day Low Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_time_of_day_low_degf = 41;
+    // Time of Day High Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_time_of_day_high_degf = 42;
+
+    // Monthly Low Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_monthly_low_degf = 43;
+    // Monthly High Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_monthly_high_degf = 44;
+
+    // Yearly Low Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_yearly_low_degf = 45;
+    // Yearly High Dewpoint in °F (255 = no data, -105 to +130°F)
+    sint32 dewpoint_yearly_high_degf = 46;
+
+    // Daily low Wind chill in °F (255 = no data, -110 to 135°F)
+    sint32 wind_chill_daily_low_degf = 47;
+    // Time of day low Wind chill in °F (255 = no data, -110 to 135°F)
+    sint32 wind_chill_time_of_day_low_degf = 48;
+    // Daily monthly Wind chill in °F (255 = no data, -110 to 135°F)
+    sint32 wind_chill_monthly_low_degf = 49;
+    // Daily yearly Wind chill in °F (255 = no data, -110 to 135°F)
+    sint32 wind_chill_yearly_low_degf = 50;
+
+    // Daily high Heat index in °F (255 = no data, -40 to +165°F)
+    sint32 heat_index_daily_low_degf = 51;
+    // Time of day high Heat index in °F (255 = no data, -40 to +165°F)
+    sint32 heat_index_time_of_day_low_degf = 52;
+    // Monthly high Heat index in °F (255 = no data, -40 to +165°F)
+    sint32 heat_index_monthly_low_degf = 53;
+    // Yearly high Heat index in °F (255 = no data, -40 to +165°F)
+    sint32 heat_index_yearly_low_degf = 54;
+
+    // Daily high THSW index <=> apparent temperature in °F (255 = no data, -110 to 135°F)
+    sint32 apparent_temp_daily_low_degf = 55;
+    // Time of day high THSW index <=> apparent temperature in °F (255 = no data, -110 to 135°F)
+    sint32 apparent_temp_time_of_day_low_degf = 56;
+    // Monthly high THSW index <=> apparent temperature in °F (255 = no data, -110 to 135°F)
+    sint32 apparent_temp_monthly_low_degf = 57;
+    // Yearly high THSW index <=> apparent temperature in °F (255 = no data, -110 to 135°F)
+    sint32 apparent_temp_yearly_low_degf = 58;
+    
+    // HUMIDITY
+
+    // Outside Daily Low Humidity in % (0 to 100%)
+    uint32 outside_humidity_daily_low = 71;
+    // Outside Daily High Humidity in % (0 to 100%)
+    uint32 outside_humidity_daily_high = 72;
+
+    // Outside Time Of Day Low Humidity in % (0 to 100%)
+    uint32 outside_humidity_time_of_day_low = 73;
+    // Outside Time Of Day High Humidity in % (0 to 100%)
+    uint32 outside_humidity_time_of_day_high = 74;
+
+    // Outside Monthly Low Humidity in % (0 to 100%)
+    uint32 outside_humidity_monthly_low = 75;
+    // Outside Monthly High Humidity in % (0 to 100%)
+    uint32 outside_humidity_monthly_high = 76;
+
+    // Outside Yearly Low Humidity in % (0 to 100%)
+    uint32 outside_humidity_yearly_low = 77;
+    // Outside Yearly High Humidity in % (0 to 100%)
+    uint32 outside_humidity_yearly_high = 78;
+
+    // Inside Daily Low Humidity in % (0 to 100%)
+    uint32 inside_humidity_daily_low = 81;
+    // Inside Daily High Humidity in % (0 to 100%)
+    uint32 inside_humidity_daily_high = 82;
+
+    // Inside Time Of Day Low Humidity in % (0 to 100%)
+    uint32 inside_humidity_time_of_day_low = 83;
+    // Inside Time Of Day High Humidity in % (0 to 100%)
+    uint32 inside_humidity_time_of_day_high = 84;
+
+    // Inside Monthly Low Humidity in % (0 to 100%)
+    uint32 inside_humidity_monthly_low = 85;
+    // Inside Monthly High Humidity in % (0 to 100%)
+    uint32 inside_humidity_monthly_high = 86;
+
+    // Outside Yearly Low Humidity in % (0 to 100%)
+    uint32 inside_humidity_yearly_low = 87;
+    // Outside Yearly High Humidity in % (0 to 100%)
+    uint32 inside_humidity_yearly_high = 88;
+    
+    // SOLAR
+    
+    // Daily High UV in UV Index, times ten (0 to 16 Index => 0 to 160)
+    uint32 uv_index_daily_high_x10 = 91;
+    // Time of Day High UV in UV Index, times ten (0 to 16 Index => 0 to 160)
+    uint32 uv_index_time_of_day_high_x10 = 92;
+    // Monthly High UV in UV Index, times ten (0 to 16 Index => 0 to 160)
+    uint32 uv_index_monthly_high_x10 = 93;
+    // Yearly High UV in UV Index, times ten (0 to 16 Index => 0 to 160)
+    uint32 uv_index_yearly_high_x10 = 94;
+    
+    // Daily High Solar radiation in W/m2 (0 to 1800 W/m2)
+    uint32 solar_radiation_daily_high_wm2 = 101;
+    // Time of day Solar radiation in W/m2 (0 to 1800 W/m2)
+    uint32 solar_radiation_time_of_day_high_wm2 = 102;
+    // Monthly Solar radiation in W/m2 (0 to 1800 W/m2)
+    uint32 solar_radiation_monthly_high_wm2 = 103;
+    // Yearly Solar radiation in W/m2 (0 to 1800 W/m2)
+    uint32 solar_radiation_yearly_high_wm2 = 104;
+
+    // RAIN
+
+    // Daily High Rain rate in inches per hour times 100 (0 to 199.9" => 0 to 19990)
+    uint32 rain_rate_daily_high_x100_inph = 111;
+    // Time of Day High Rain rate in inches per hour times 100 (0 to 199.9" => 0 to 19990)
+    uint32 rain_rate_time_of_day_high_x100_inph = 112;
+    // Hour High Rain rate in inches per hour times 100 (0 to 199.9" => 0 to 19990)
+    uint32 rain_rate_hour_high_x100_inph = 113;
+    // Monthly High Rain rate in inches per hour times 100 (0 to 199.9" => 0 to 19990)
+    uint32 rain_rate_monthly_high_x100_inph = 114;
+    // Yearly High Rain rate in inches per hour times 100 (0 to 199.9" => 0 to 19990)
+    uint32 rain_rate_yearly_high_x100_inph = 115;
+
+    // BAROMETRY
+
+    // Daily Low barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_daily_low_x1000_in = 121;
+    // Daily High barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_daily_high_x1000_in = 122;
+
+    // Monthly Low barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_month_low_x1000_in = 123;
+    // Monthly High barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_month_high_x1000_in = 124;
+
+    // Yearly Low barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_yearly_low_x1000_in = 125;
+    // Yearly High barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_yearly_high_x1000_in = 126;
+
+    // Time of day Low barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_time_of_day_low_x1000_in = 127;
+    // Time of day High barometer pressure in inches, times 1000 (16.00" to 32.50"Hg => 16000 to 325000)
+    uint32 barometer_time_of_day_high_x1000_in = 128;
+
+
+}
+
+/*
+ * Packet emitted by device to start a new synchronization process. Will contain the new device id.
+ */
+message WeatherStationStartSyncRequestPacket {
+    string device_id = 1;
+}
+
+/*
+ * Packet emitted by cloud in response to the new synchronization process request. Will contain the new sync id (or error).
+ */
+message WeatherStationStartSyncResponsePacket {
+    uint64 sync_id = 1;
+    uint32 err_code = 2;
+}
+
+/*
+ * Packet emitted for synchronization purposes, when connectivity gets back online.
+ * Contains existing sync_id (given by cloud) and pushes batch_id (which will be acknowledged).
+ */
+message WeatherStationSyncBatchPacket {
+    uint64 sync_id = 1;
+    uint64 batch_id = 2;
+    repeated WeatherStationDataPacket data = 3;
+    repeated WeatherStationHiLowDataPacket hi_low_data = 4;
+    repeated WeatherStationAlarmPacket alarm_data = 5;
+}
+
+
+/*
+ * Packet emitted to cloud to request the status of an existing synchronization process.
+ */
+message WeatherStationSyncStatusRequestPacket {
+    uint64 sync_id = 1;
+}
+
+/*
+ * Packet emitted by cloud for synchronization purposes. It checks which batches have been received.
+ */
+message WeatherStationSyncStatusResponsePacket {
+    repeated uint64 batch_id = 1;
+}
+
+
+/*
+ * Packet emitted to cloud containing the sync_id.
+ * Can either be used for sync status, commit, or rollback.
+ */
+message WeatherStationSyncIdPacket {
+    uint64 sync_id = 1;
+}
